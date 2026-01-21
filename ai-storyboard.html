@@ -1,0 +1,591 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI Transcription Storyboard – Light</title>
+<style>
+  :root{
+    /* LIGHT THEME (default) */
+    --bg:#f5f7fb;
+    --bg2:#eef2f7;
+    --panel:#ffffff;
+    --ink:#0f172a;
+    --muted:#475569;
+    --border:#e2e8f0;
+    --tab:#f1f5f9;
+    --blue:#2563eb;
+    --teal:#0ea5e9;
+    --lime:#10b981;
+    --gold:#f59e0b;
+    --danger:#ef4444;
+    --cardShadow: 0 10px 24px #1f29370f, 0 2px 6px #1f29370d;
+    --insetBorder: inset 0 0 0 1px var(--border);
+    --h:100vh;
+  }
+  /* DARK THEME (toggle) */
+  .dark {
+    --bg:#0b1220;
+    --bg2:#111827;
+    --panel:#0f172a;
+    --ink:#e5e7eb;
+    --muted:#9ca3af;
+    --border:#1f2937;
+    --tab:#111827;
+    --cardShadow: 0 20px 40px #0008, inset 0 0 0 1px #0f1b37;
+    --insetBorder: inset 0 0 0 1px #0d1b34;
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);
+    font-family:Segoe UI, Roboto, system-ui, -apple-system, Arial, sans-serif}
+
+  /* Light techno background */
+  body::before{
+    content:"";
+    position:fixed; inset:0; z-index:-2; pointer-events:none;
+    background:
+      radial-gradient(900px 380px at 10% -5%, #d7e6ff 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #d5f5ff 0%, transparent 55%),
+      linear-gradient(120deg, var(--bg) 0%, var(--bg2) 60%, var(--bg) 100%);
+    animation:bgpulse 14s ease-in-out infinite alternate;
+  }
+  @keyframes bgpulse{ from{filter:saturate(1) brightness(1)} to{filter:saturate(1.15) brightness(1.05)} }
+  body::after{
+    content:"";
+    position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.12;
+    background:
+      repeating-linear-gradient(90deg, #bfd7ff 0 2px, transparent 2px 100px),
+      repeating-linear-gradient(0deg,  #bfd7ff 0 2px, transparent 2px 100px);
+    mask: radial-gradient(70% 60% at 50% 50%, #000 45%, transparent 100%);
+  }
+
+  /* Header with flipping nav tabs (light) */
+  header{
+    position:sticky; top:0; z-index:10; backdrop-filter: blur(6px);
+    background:linear-gradient(to bottom, #ffffffcc, #ffffff00);
+    border-bottom:1px solid var(--border);
+  }
+  .bar{display:flex; align-items:center; gap:12px; padding:10px 16px; max-width:1200px; margin:auto;}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.3px}
+  .logo{width:36px; height:36px; border-radius:10px; background:conic-gradient(from 180deg, var(--teal), var(--blue), var(--lime), var(--teal)); box-shadow:0 0 14px #0ea5e93a inset, 0 0 6px #0ea5e966;}
+  nav{display:flex; gap:8px; flex-wrap:wrap; margin-left:12px}
+  .tab{width:92px; height:40px; perspective:600px;}
+  .tab > button{width:100%; height:100%; border:0; color:var(--ink); cursor:pointer; position:relative; background:transparent; font-weight:700; letter-spacing:.2px; text-transform:uppercase; font-size:12px;}
+  .flip-card{position:absolute; inset:0; transform-style:preserve-3d; transition:transform .5s;}
+  .tab:hover .flip-card{ transform:rotateY(180deg); }
+  .face{position:absolute; inset:0; display:grid; place-items:center; backface-visibility:hidden; border:1px solid var(--border); border-radius:10px; background:linear-gradient(180deg, var(--tab), #ffffff); box-shadow:var(--cardShadow);}
+  .back{transform:rotateY(180deg); color:var(--teal); font-weight:800;}
+  .active .face{border-color:var(--teal); box-shadow:0 0 0 1.5px var(--teal);}
+  .spacer{flex:1}
+  .controls{display:flex; gap:8px; align-items:center}
+  .btn{border:1px solid var(--border); background:#fff; color:var(--ink); padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:600; box-shadow:var(--cardShadow);}
+  .btn:hover{border-color:#cbd5e1; background:#fafafa}
+  .btn.primary{border-color:var(--teal); color:#0b4b68; box-shadow:0 0 0 1px var(--teal) inset}
+  .btn.danger{border-color:#fecaca; color:#7f1d1d; background:#fff0f0}
+
+  /* Stage & slides */
+  .stage{max-width:1200px; margin:16px auto 100px; padding:0 16px}
+  .slide{
+    display:none; grid-template-columns:1.2fr .9fr; gap:24px; align-items:center; min-height:calc(var(--h) - 190px);
+    border:1px solid var(--border); border-radius:16px; padding:24px; background:var(--panel); box-shadow:var(--cardShadow);
+  }
+  .slide.active{display:grid; animation:fadeIn .45s ease}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+
+  .title{font-size:36px; font-weight:800; letter-spacing:.2px; margin:0 0 12px}
+  .kicker{color:var(--muted); margin:0 0 16px}
+  .content{font-size:18px; line-height:1.6}
+  .pill-row{display:flex; gap:12px; flex-wrap:wrap; margin-top:12px}
+  .pill{padding:10px 14px; border-radius:999px; background:#f1f5f9; border:1px solid #dbe4f2; font-weight:700}
+
+  .panel{border:1px solid var(--border); border-radius:14px; padding:16px; background:#ffffff; box-shadow:var(--cardShadow)}
+  .panel h4{margin:0 0 10px; font-size:20px; color:#0b2038}
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+  .bullet{margin:8px 0; padding-left:18px; position:relative}
+  .bullet::before{content:"•"; position:absolute; left:0; color:var(--teal); font-weight:900}
+
+  /* Media block with global editor support */
+  .media{
+    border:1px dashed #c7d2fe; border-radius:14px; display:grid; place-items:center; min-height:280px; position:relative; overflow:hidden;
+    background:radial-gradient(400px 160px at 20% 20%, #e7f3ff 0%, transparent 60%);
+  }
+  .media img{max-width:100%; max-height:460px; object-fit:contain; filter:drop-shadow(0 10px 18px #0002)}
+  .media .uploader{position:absolute; bottom:8px; right:8px; display:none}
+  .media .uploader .note{font-size:12px; color:var(--muted); margin-top:4px}
+  .edit-on .media .uploader{display:block}
+
+  .editable[contenteditable="true"]{outline:1.5px dashed #3b82f6; padding:.5px 2px; border-radius:6px; background:#f8fafc}
+
+  /* Footer nav & progress */
+  footer{position:fixed; inset:auto 0 0 0; background:linear-gradient(to top,#ffffffea,#ffffff00); border-top:1px solid var(--border); backdrop-filter: blur(6px); z-index:9}
+  .foot{max-width:1200px; margin:auto; display:flex; align-items:center; gap:12px; padding:10px 16px}
+  .progress{flex:1; height:6px; background:#e2e8f0; border-radius:999px; overflow:hidden}
+  .progress > div{height:100%; width:0%; background:linear-gradient(90deg,var(--teal), var(--blue)); transition:width .3s}
+  .kbd{opacity:.7; font-size:12px}
+
+  /* Tutor widget (light) */
+  .tutor{position:fixed; top:12px; right:12px; width:240px; z-index:20; display:grid; gap:8px; justify-items:end}
+  .tcard{background:#ffffff; border:1px solid var(--border); border-radius:16px; padding:12px 12px 12px 56px; position:relative; box-shadow:var(--cardShadow)}
+  .robot{position:absolute; left:-8px; top:-8px; width:64px; height:64px; border-radius:14px; background:radial-gradient(40px 40px at 30% 30%, #0ea5e9, #2563eb); border:1px solid #9ec9ff; box-shadow:0 0 16px #60a5fa66; display:grid; place-items:center; overflow:hidden; animation:float 3s ease-in-out infinite;}
+  @keyframes float{50%{transform:translateY(-3px)}}
+  .robot svg{width:48px; height:48px; filter:drop-shadow(0 0 6px #0ea5e955)}
+  .robot.speaking{box-shadow:0 0 22px #1e90ffaa, 0 0 60px #0ea5e933}
+  .tcontrols{display:flex; gap:6px}
+  .tbtn{border:1px solid var(--border); background:#fff; color:#0b4b68; padding:6px 10px; border-radius:10px; cursor:pointer; font-size:12px}
+  .tbtn:hover{background:#f8fafc}
+
+  @media (max-width:1000px){
+    .slide{grid-template-columns:1fr; padding:18px}
+    .tutor{right:6px; top:auto; bottom:90px}
+  }
+</style>
+</head>
+<body>
+  <!-- Tutor / Speaker -->
+  <aside class="tutor">
+    <div class="tcard">
+      <div class="robot" id="robot" title="Click • Speak / Pause">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <rect x="8" y="14" width="48" height="36" rx="10" fill="#0b1e3a" stroke="#44d3ff" />
+          <circle cx="24" cy="32" r="6" fill="#0ea5e9"/><circle cx="24" cy="32" r="3" fill="#bff4ff"/>
+          <circle cx="40" cy="32" r="6" fill="#0ea5e9"/><circle cx="40" cy="32" r="3" fill="#bff4ff"/>
+          <rect x="22" y="42" width="20" height="4" rx="2" fill="#0ea5e9"/>
+        </svg>
+      </div>
+      <div class="tcontrols">
+        <button class="tbtn" id="speakBtn">Speak</button>
+        <button class="tbtn" id="pauseBtn">Pause</button>
+        <button class="tbtn" id="stopBtn">Stop</button>
+      </div>
+      <div class="small">Tutor reads the current slide aloud</div>
+    </div>
+  </aside>
+
+  <header>
+    <div class="bar">
+      <div class="brand"><div class="logo"></div> AI Transcription Storyboard</div>
+      <nav id="tabs"></nav>
+      <div class="spacer"></div>
+      <div class="controls">
+        <button class="btn" id="themeToggle" title="Switch Light/Dark">Light</button>
+        <button class="btn" id="editToggle" title="Toggle edit mode (text + images)">Edit Mode</button>
+        <button class="btn" id="saveLocal">Save</button>
+        <button class="btn" id="loadLocal">Load</button>
+        <button class="btn" id="exportHtml">Export HTML</button>
+        <button class="btn" id="printBtn">Print/PDF</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="stage" id="stage">
+    <!-- 1. Cover -->
+    <section class="slide active" data-title="Cover">
+      <div>
+        <h1 class="title editable" contenteditable="false">AI Transcription for Faster Documentation</h1>
+        <p class="kicker editable" contenteditable="false">Turboscribe & In‑House Python Transcriber — End‑to‑End Demonstration for Senior Management</p>
+        <div class="panel content editable" contenteditable="false">
+          <p>Use the navigation tabs or ← / → keys to move between slides. Toggle <b>Edit Mode</b> to modify text and upload screenshots for <b>any</b> slide.</p>
+          <div class="pill-row"><span class="pill">Transcribe</span><span class="pill">Summarize</span><span class="pill">Document</span><span class="pill">Share</span></div>
+        </div>
+      </div>
+      <div class="media"><img id="heroImg" alt="Cover image (optional)" /></div>
+    </section>
+
+    <!-- 2. Problem & Outcome -->
+    <section class="slide" data-title="Problem & Outcome">
+      <div>
+        <h2 class="title editable" contenteditable="false">Problem We Face Today</h2>
+        <div class="two-col">
+          <div class="panel editable" contenteditable="false">
+            <h4>Challenge</h4>
+            <div class="bullet">Teams spend hours listening to long recordings and drafting documents</div>
+            <div class="bullet">Key details get missed; quality varies by person</div>
+            <div class="bullet">Slow turnaround delays decisions</div>
+          </div>
+          <div class="panel editable" contenteditable="false">
+            <h4>Target Outcome</h4>
+            <div class="bullet">Reliable transcripts in minutes</div>
+            <div class="bullet">Consistent, structured documents</div>
+            <div class="bullet">Fewer errors and faster reviews</div>
+          </div>
+        </div>
+      </div>
+      <div class="media"><img alt="" /></div>
+    </section>
+
+    <!-- 3. At a Glance -->
+    <section class="slide" data-title="At a Glance">
+      <div>
+        <h2 class="title editable" contenteditable="false">How It Works — At a Glance</h2>
+        <div class="panel content editable" contenteditable="false">
+          <p><b>Record</b> → <b>Transcribe (AI)</b> → <b>Summarize (ChatGPT/Gemini)</b> → <b>Final Document</b> → <b>Share/Archive</b></p>
+          <p>Outcome: Better quality, less manual effort, faster documents.</p>
+        </div>
+        <div class="pill-row"><span class="pill">Record</span><span class="pill">AI</span><span class="pill">LLM</span><span class="pill">Document</span><span class="pill">Share</span></div>
+      </div>
+      <div class="media"><img alt="" /></div>
+    </section>
+
+    <!-- 4. Turboscribe (screenshot once) -->
+    <section class="slide" data-title="Turboscribe">
+      <div>
+        <h2 class="title editable" contenteditable="false">Tool 1 — Turboscribe</h2>
+        <div class="panel content editable" contenteditable="false">
+          <div class="bullet">Cloud-based tool to convert audio/video to text</div>
+          <div class="bullet">Upload recording → AI transcript</div>
+          <div class="bullet">Send transcript to ChatGPT/Gemini for MOM/summary</div>
+          <div class="bullet">Great for quick, ad‑hoc use (no setup)</div>
+        </div>
+      </div>
+      <div class="media"><img id="imgTurboscribe" alt="Turboscribe UI" /></div>
+    </section>
+
+    <!-- 5. Turboscribe Flow -->
+    <section class="slide" data-title="Turboscribe Flow">
+      <div>
+        <h2 class="title editable" contenteditable="false">Turboscribe — End‑to‑End Flow</h2>
+        <div class="two-col">
+          <div class="panel editable" contenteditable="false">
+            <h4>Steps</h4>
+            <div class="bullet">1) Upload meeting recording</div>
+            <div class="bullet">2) AI generates transcript</div>
+            <div class="bullet">3) Paste into ChatGPT/Gemini</div>
+            <div class="bullet">4) Generate structured document</div>
+            <div class="bullet">5) Export & share</div>
+          </div>
+          <div class="panel editable" contenteditable="false">
+            <h4>Benefits</h4>
+            <div class="bullet">Reduced manual drafting</div>
+            <div class="bullet">Fewer missed points</div>
+            <div class="bullet">Fast turnaround for minutes</div>
+          </div>
+        </div>
+      </div>
+      <div class="media"><img alt="" /></div>
+    </section>
+
+    <!-- 6. Turboscribe Limits -->
+    <section class="slide" data-title="Turboscribe Limits">
+      <div>
+        <h2 class="title editable" contenteditable="false">Turboscribe — Free‑Tier Limitations</h2>
+        <div class="two-col">
+          <div class="panel editable" contenteditable="false">
+            <h4>Limits</h4>
+            <div class="bullet">3 recordings per day</div>
+            <div class="bullet">30 minutes per recording</div>
+            <div class="bullet">Upgrade required for higher usage</div>
+          </div>
+          <div class="panel editable" contenteditable="false">
+            <h4>When to Use</h4>
+            <div class="bullet">Light usage and short meetings</div>
+            <div class="bullet">Quick experiments or ad‑hoc</div>
+          </div>
+        </div>
+      </div>
+      <div class="media"><img alt="" /></div>
+    </section>
+
+    <!-- 7. In‑House (screenshot once) -->
+    <section class="slide" data-title="In‑House Python">
+      <div>
+        <h2 class="title editable" contenteditable="false">Tool 2 — In‑House Python Transcriber</h2>
+        <div class="panel content editable" contenteditable="false">
+          <div class="bullet">Unlimited length and daily usage</div>
+          <div class="bullet">Two scripts: <b>upload</b> and <b>transcribe</b></div>
+          <div class="bullet">Can integrate with SharePoint, RPA, workflows</div>
+          <div class="bullet">Full control & extensibility</div>
+        </div>
+      </div>
+      <div class="media"><img id="imgInhouse" alt="In‑house Python Tool" /></div>
+    </section>
+
+    <!-- 8. In‑House Flow -->
+    <section class="slide" data-title="In‑House Flow">
+      <div>
+        <h2 class="title editable" contenteditable="false">In‑House — End‑to‑End Flow</h2>
+        <div class="two-col">
+          <div class="panel editable" contenteditable="false">
+            <h4>Steps</h4>
+            <div class="bullet">1) Provide audio/video file path</div>
+            <div class="bullet">2) Script 1 uploads/prepares audio</div>
+            <div class="bullet">3) Script 2 transcribes to text</div>
+            <div class="bullet">4) (Optional) Push to LLM for document</div>
+            <div class="bullet">5) Store & distribute</div>
+          </div>
+          <div class="panel editable" contenteditable="false">
+            <h4>Integration</h4>
+            <div class="bullet">APIs to connect with DMS/SharePoint</div>
+            <div class="bullet">Watch‑folder automation & schedulers</div>
+            <div class="bullet">RPA/ticketing workflow triggers</div>
+          </div>
+        </div>
+      </div>
+      <div class="media"><img alt="" /></div>
+    </section>
+
+    <!-- 9. Ops & Governance -->
+    <section class="slide" data-title="Ops & Governance">
+      <div>
+        <h2 class="title editable" contenteditable="false">Operational Notes & Governance</h2>
+        <div class="two-col">
+          <div class="panel editable" contenteditable="false">
+            <h4>Operations</h4>
+            <div class="bullet">Python runtime/server required</div>
+            <div class="bullet">Add logging, monitoring, retries</div>
+            <div class="bullet">Versioning & access controls</div>
+          </div>
+          <div class="panel editable" contenteditable="false">
+            <h4>Security & Compliance</h4>
+            <div class="bullet">Align with internal data policies</div>
+            <div class="bullet">Role‑based access, encryption at rest</div>
+            <div class="bullet">Retention & audit trails</div>
+          </div>
+        </div>
+      </div>
+      <div class="media"><img alt="" /></div>
+    </section>
+
+    <!-- 10. Final Comparison -->
+    <section class="slide" data-title="Final Comparison">
+      <div>
+        <h2 class="title editable" contenteditable="false">Side‑by‑Side Summary</h2>
+        <div class="two-col">
+          <div class="panel editable" contenteditable="false">
+            <h4>Turboscribe</h4>
+            <div class="bullet">No code, web UI</div>
+            <div class="bullet">3/day & 30‑min cap (free)</div>
+            <div class="bullet">Best for ad‑hoc & short sessions</div>
+          </div>
+          <div class="panel editable" contenteditable="false">
+            <h4>In‑House Python</h4>
+            <div class="bullet">Unlimited length/usage</div>
+            <div class="bullet">Full integration (APIs/RPA)</div>
+            <div class="bullet">Best for scale & automation</div>
+          </div>
+        </div>
+        <div class="panel editable" contenteditable="false" style="margin-top:12px">
+          <b>Recommendation:</b> Use Turboscribe for quick cases; deploy In‑House for long recordings, integrations, and governance.
+        </div>
+      </div>
+      <div class="media"><img alt="" /></div>
+    </section>
+
+    <!-- 11. Next Steps -->
+    <section class="slide" data-title="Next Steps">
+      <div>
+        <h2 class="title editable" contenteditable="false">Recommended Next Steps</h2>
+        <div class="panel editable" contenteditable="false">
+          <div class="bullet">Pilot both tools on the same 60–90 min recording</div>
+          <div class="bullet">Measure accuracy & time to final document</div>
+          <div class="bullet">Decide hosting/integration approach for In‑House</div>
+          <div class="bullet">Define governance & SOPs</div>
+          <div class="bullet">Rollout training and quick reference guide</div>
+        </div>
+      </div>
+      <div class="media"><img alt="" /></div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="foot">
+      <button class="btn" id="prevBtn">← Prev</button>
+      <div class="progress"><div id="prog"></div></div>
+      <button class="btn primary" id="nextBtn">Next →</button>
+      <span class="kbd">Tip: Use keyboard ← / →</span>
+    </div>
+  </footer>
+
+<script>
+(function(){
+  const stage = document.getElementById('stage');
+  const tabs = document.getElementById('tabs');
+  const prog = document.getElementById('prog');
+  let slides = [...stage.querySelectorAll('.slide')];
+  let index = 0;
+  let edit = false;
+
+  /* Build flipping tabs */
+  const buildTabs = ()=>{
+    tabs.innerHTML='';
+    slides.forEach((s, i)=>{
+      const title = s.dataset.title || ('Slide ' + (i+1));
+      const tab = document.createElement('div');
+      tab.className='tab';
+      tab.innerHTML = `
+        <button data-idx="${i}" aria-label="Go to ${title}">
+          <div class="flip-card">
+            <div class="face">${i+1}</div>
+            <div class="face back">${title}</div>
+          </div>
+        </button>`;
+      tabs.appendChild(tab);
+    });
+  };
+
+  /* Set active slide */
+  const setActive = (i)=>{
+    index = Math.max(0, Math.min(slides.length-1, i));
+    slides.forEach((s, j)=>s.classList.toggle('active', j===index));
+    [...tabs.children].forEach((t, j)=>t.classList.toggle('active', j===index));
+    prog.style.width = (((index+1)/slides.length)*100) + '%';
+    location.hash = '#s'+(index+1);
+  };
+
+  /* Global image uploaders: add to ALL media blocks */
+  function initUploaders(scope=document){
+    const mediaBlocks = [...scope.querySelectorAll('.media')];
+    mediaBlocks.forEach((m, idx)=>{
+      let img = m.querySelector('img');
+      if(!img){
+        img = document.createElement('img');
+        img.alt = '';
+        m.appendChild(img);
+      }
+      // If an uploader already exists, skip creating a new one
+      if(m.querySelector('.uploader')) return;
+
+      const wrap = document.createElement('div');
+      wrap.className = 'uploader';
+      wrap.innerHTML = `
+        <input type="file" accept="image/*" />
+        <div class="note">Upload image for this slide</div>
+      `;
+      m.appendChild(wrap);
+      const input = wrap.querySelector('input');
+      input.addEventListener('change', (e)=>{
+        const f = e.target.files[0];
+        if(!f) return;
+        const reader = new FileReader();
+        reader.onload = ev => { img.src = ev.target.result; wrap.classList.add('hide'); };
+        reader.readAsDataURL(f);
+      });
+    });
+  }
+
+  /* Edit Mode toggle */
+  const editToggle = document.getElementById('editToggle');
+  const toggleEdit = ()=>{
+    edit = !edit;
+    document.body.classList.toggle('edit-on', edit);
+    editToggle.classList.toggle('primary', edit);
+    editToggle.textContent = edit ? 'Edit Mode: ON' : 'Edit Mode';
+    // Make text editable
+    document.querySelectorAll('.editable').forEach(el=>{
+      el.setAttribute('contenteditable', edit ? 'true' : 'false');
+    });
+    // Show uploaders for all slides (or hide if image already present)
+    document.querySelectorAll('.media').forEach(m=>{
+      const u = m.querySelector('.uploader');
+      if(!u) return;
+      const hasImg = !!m.querySelector('img')?.src;
+      u.classList.toggle('hide', !edit && hasImg);
+      if(edit) u.classList.remove('hide');
+    });
+  };
+  editToggle.onclick = toggleEdit;
+
+  /* Theme toggle (Light default) */
+  const themeToggle = document.getElementById('themeToggle');
+  themeToggle.onclick = ()=>{
+    document.body.classList.toggle('dark');
+    themeToggle.textContent = document.body.classList.contains('dark') ? 'Dark' : 'Light';
+  };
+
+  /* Title tabs click */
+  tabs.addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-idx]');
+    if(btn){ setActive(+btn.dataset.idx); }
+  });
+
+  /* Prev/Next & arrows */
+  document.getElementById('prevBtn').onclick=()=>setActive(index-1);
+  document.getElementById('nextBtn').onclick=()=>setActive(index+1);
+  window.addEventListener('keydown', (e)=>{
+    if (['INPUT','TEXTAREA'].includes(document.activeElement.tagName) || document.activeElement.getAttribute('contenteditable') === 'true') return;
+    if(e.key==='ArrowRight') setActive(index+1);
+    if(e.key==='ArrowLeft') setActive(index-1);
+  });
+
+  /* Hash deep link */
+  if(location.hash.startsWith('#s')){
+    const n = parseInt(location.hash.replace('#s',''),10);
+    if(!Number.isNaN(n) && n>=1 && n<=slides.length) index=n-1;
+  }
+
+  /* Save / Load / Export / Print */
+  const KEY='ai-transcription-storyboard-v2';
+  document.getElementById('saveLocal').onclick = ()=>{
+    // Turn off edit outlines before saving DOM
+    const wasEdit = edit; if(wasEdit) toggleEdit();
+    const data = { html: stage.innerHTML, idx: index, dark: document.body.classList.contains('dark') };
+    localStorage.setItem(KEY, JSON.stringify(data));
+    alert('Saved to your browser.');
+    if(wasEdit) toggleEdit();
+  };
+  document.getElementById('loadLocal').onclick = ()=>{
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return alert('Nothing saved yet.');
+    const data = JSON.parse(raw);
+    stage.innerHTML = data.html;
+    // Re-evaluate lists after load
+    slides = [...stage.querySelectorAll('.slide')];
+    buildTabs();
+    initUploaders(stage); // ensure uploaders exist on all media
+    setActive(data.idx || 0);
+    document.body.classList.toggle('dark', !!data.dark);
+    themeToggle.textContent = document.body.classList.contains('dark') ? 'Dark' : 'Light';
+    alert('Loaded from your browser.');
+  };
+  document.getElementById('exportHtml').onclick = ()=>{
+    const wasEdit = edit; if(wasEdit) toggleEdit();
+    const blob = new Blob([document.documentElement.outerHTML], {type:'text/html'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ai-transcription-storyboard.html';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    if(wasEdit) toggleEdit();
+  };
+  document.getElementById('printBtn').onclick = ()=>window.print();
+
+  /* Tutor (TTS) */
+  const speakBtn = document.getElementById('speakBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const robot = document.getElementById('robot');
+  let utter = null;
+
+  const getSlideText = ()=>{
+    const s = slides[index];
+    let txt = '';
+    s.querySelectorAll('.title, .panel, .content, .kicker')
+      .forEach(el=> txt += ' ' + (el.innerText || '').replace(/\s+/g,' ').trim());
+    return txt.trim() || 'This slide has no text.';
+  };
+  const startSpeak = ()=>{
+    const msg = getSlideText();
+    if(!('speechSynthesis' in window)) return alert('Speech not supported in this browser.');
+    window.speechSynthesis.cancel();
+    utter = new SpeechSynthesisUtterance(msg);
+    utter.rate = 1.02; utter.pitch = 1.0; utter.volume = 1.0;
+    utter.onstart = ()=> robot.classList.add('speaking');
+    utter.onend = ()=> robot.classList.remove('speaking');
+    speechSynthesis.speak(utter);
+  };
+  const pauseSpeak = ()=> speechSynthesis.paused ? speechSynthesis.resume() : speechSynthesis.pause();
+  const stopSpeak = ()=> { speechSynthesis.cancel(); robot.classList.remove('speaking'); };
+  speakBtn.onclick = startSpeak; pauseBtn.onclick = pauseSpeak; stopBtn.onclick = stopSpeak;
+  robot.onclick = ()=> speechSynthesis.speaking ? pauseSpeak() : startSpeak();
+
+  /* Initial mount */
+  buildTabs();
+  initUploaders();         // 🔹 create uploaders for ALL slides
+  setActive(index);        // show slide 1
+  themeToggle.textContent = 'Light'; // default theme label
+})();
+</script>
+</body>
+</html>
+``
